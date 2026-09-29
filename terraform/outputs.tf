@@ -1,0 +1,11 @@
+output "region" { value = var.region }
+output "topic_arn" { value = aws_sns_topic.notifications.arn }
+output "function_name" { value = aws_lambda_function.hello.function_name }
+output "function_arn" { value = aws_lambda_function.hello.arn }
+output "log_group" { value = aws_cloudwatch_log_group.lambda.name }
+output "schedule_name" { value = aws_scheduler_schedule.daily.name }
+output "schedule_group" { value = aws_scheduler_schedule_group.daily.name }
+output "scheduler_role_arn" { value = aws_iam_role.scheduler.arn }
+output "schedule_expression" { value = aws_scheduler_schedule.daily.schedule_expression }
+output "schedule_timezone" { value = aws_scheduler_schedule.daily.schedule_expression_timezone }
+output "schedule_state" { value = aws_scheduler_schedule.daily.state }
