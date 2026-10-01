@@ -2,10 +2,23 @@
 
 Python Lambda publishes the exact message `Hello, world!` to an SNS Standard topic. EventBridge Scheduler invokes it daily at **01:00 Europe/Belgrade**. Email subscribers are added and confirmed manually, as required by the assignment.
 
-```text
-EventBridge Scheduler → Lambda (Python 3.14) → SNS Standard topic → confirmed email subscribers
-                              ↓
-                        CloudWatch Logs
+## Architecture
+
+```mermaid
+flowchart TD
+    accTitle: Task 2 daily email architecture
+    accDescr: EventBridge Scheduler invokes Lambda daily at 01:00 Europe/Belgrade. Lambda publishes Hello, world! to SNS, which emails manually confirmed subscribers. Lambda writes execution logs to CloudWatch with seven-day retention.
+
+    scheduler["EventBridge Scheduler<br/>Daily at 01:00 Europe/Belgrade"]
+    lambda["AWS Lambda<br/>Python 3.14"]
+    sns["SNS Standard topic<br/>get-task2-notifications"]
+    email["Email subscribers<br/>Manually subscribed and confirmed"]
+    logs["CloudWatch Logs<br/>7-day retention"]
+
+    scheduler -->|Invoke via scheduler IAM role| lambda
+    lambda -->|Publish: Hello, world!| sns
+    sns -->|Deliver email| email
+    lambda -.->|Execution logs| logs
 ```
 
 AWS handles scheduling, execution, permissions, retries and email delivery. The function only publishes a message and logs the resulting SNS MessageId. It runs outside a VPC and uses its IAM role for authentication.
