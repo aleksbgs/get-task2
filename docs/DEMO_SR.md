@@ -13,17 +13,37 @@ U AWS konzoli prikaži:
 
 ## 2. Ručna provera
 
-Koristi `aws lambda invoke` komandu iz README-a. U odgovoru proveri da nema `FunctionError`, a u rezultatu proveri `message_id` i `Hello, world!`. Zatim pokaži `published` zapis u CloudWatch-u i stvarno primljen email.
+Iz korena projekta, uz podešen `AWS_PROFILE`, pokreni:
+
+```bash
+make status
+make subscriptions
+make invoke
+make logs SINCE=10m
+```
+
+`make invoke` proverava da nema `FunctionError`, kao i `message_id` i `Hello, world!` u rezultatu. Zatim pokaži `published` zapis u CloudWatch-u i stvarno primljen email. `make verify` objedinjuje status, poziv i logove; svaki poziv šalje novu test poruku. `make logs-follow` prati logove do Ctrl-C.
 
 Uspešan SNS Publish bez potvrđene pretplate ne dokazuje prijem emaila.
 
 ## 3. Provera preko Scheduler-a
 
-Da se test ne bi čekao do noći, u Scheduler konzoli napravi privremeni **one-time** raspored:
+Da se test ne bi čekao do noći, napravi privremeni **one-time** raspored:
+
+```bash
+make demo-schedule DELAY=180
+# Posle zakazanog vremena:
+make logs
+make demo-status
+```
+
+Komanda računa vreme u UTC-u, kreira `get-task2-demo` u postojećoj grupi i uključuje automatsko brisanje. Koristi postojeću Scheduler rolu i Lambdu. Dnevni raspored ostaje na `Europe/Belgrade`. Postojeći demo istog imena se ne prepisuje; prvo ga pregledaj, pa po potrebi ukloni sa `make demo-delete`.
+
+Ekvivalentni ručni postupak u Scheduler konzoli:
 
 1. Ime `get-task2-demo`, grupa `get-task2`.
 2. Vreme nekoliko minuta unapred, zona `Europe/Belgrade`, flexible window `OFF`.
-3. Target: Lambda `get-task2-hello`, payload `{}`.
+3. Target: Lambda `get-task2-hello`, payload `{"source":"demo-schedule"}`.
 4. Izaberi postojeću rolu `get-task2-scheduler`.
 5. Uključi automatsko brisanje rasporeda po završetku.
 
@@ -31,8 +51,21 @@ Sačekaj izvršavanje, zatim pokaži novo Lambda izvršavanje, CloudWatch zapis 
 
 ## 4. Dokazi
 
-U lokalni `evidence/` sačuvaj konfiguraciju dnevnog rasporeda, rezultat Lambda poziva, CloudWatch zapis i dokaz prijema poruke. Sakrij email adresu ako se screenshot deli. AWS prihvatanje poruke i prijem u sandučetu evidentiraj odvojeno.
+Status, odgovor Lambda poziva, demo zahtev i logovi automatski se čuvaju u zasebnim poddirektorijumima `evidence/`. Dodaj dokaz prijema poruke. Sakrij email adresu ako se screenshot deli. AWS prihvatanje poruke i prijem u sandučetu evidentiraj odvojeno. Nestanak demo rasporeda sam po sebi nije dokaz da je email stigao.
 
 ## 5. Uklanjanje
 
-Prikaži komande za isključivanje rasporeda i `terraform destroy` iz README-a. AWS upravlja najvećim delom logike; Mac ne mora da ostane uključen da bi dnevni raspored radio.
+```bash
+make pause-plan
+make show-plan PLAN=pause.tfplan
+make pause
+make demo-delete
+make destroy-plan
+make show-plan PLAN=destroy.tfplan
+make destroy
+make state
+```
+
+Pokreni sledeći korak tek kada prethodni uspe. Primena sačuvanog plana ne traži dodatnu potvrdu. Privremeni demo ukloni pre brisanja Terraform resursa. Za ponovno uključivanje postojeće infrastrukture koristi `make resume-plan`, pregled plana i `make resume`. Ako pauza treba da važi i za budući običan `make plan`, promeni i `schedule_enabled` u lokalnom tfvars fajlu.
+
+`make help` prikazuje sve komande; `make package` pravi arhivu za predaju. AWS upravlja najvećim delom logike; lokalni računar ne mora da ostane uključen da bi dnevni raspored radio.

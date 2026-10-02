@@ -18,6 +18,7 @@ SOURCE_FILES = (
     "src/handler.py",
     "scripts/build.py",
     "scripts/package.py",
+    "scripts/task2.py",
     "terraform/.terraform.lock.hcl",
     "terraform/versions.tf",
     "terraform/variables.tf",
@@ -31,6 +32,8 @@ SOURCE_FILES = (
     "terraform/tests/plan.tftest.hcl",
     "tests/test_handler.py",
     "tests/test_package.py",
+    "tests/test_task2.py",
+    "tests/test_make.py",
     "docs/DEMO_SR.md",
 )
 
